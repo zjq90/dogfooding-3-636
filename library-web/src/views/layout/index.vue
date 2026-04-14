@@ -73,7 +73,9 @@ export default {
         { path: '/books', title: '图书管理', icon: 'el-icon-reading' },
         { path: '/categories', title: '分类管理', icon: 'el-icon-folder-opened' },
         { path: '/borrow', title: '借阅管理', icon: 'el-icon-document' },
-        { path: '/users', title: '用户管理', icon: 'el-icon-user' }
+        { path: '/users', title: '用户管理', icon: 'el-icon-user' },
+        { path: '/departments', title: '部门管理', icon: 'el-icon-office-building' },
+        { path: '/staff', title: '内部人员', icon: 'el-icon-s-custom' }
       ]
     }
   },
