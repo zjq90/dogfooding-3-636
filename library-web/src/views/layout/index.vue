@@ -70,6 +70,8 @@ export default {
       defaultAvatar: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
       menuList: [
         { path: '/dashboard', title: '数据概览', icon: 'el-icon-s-data' },
+        { path: '/departments', title: '部门管理', icon: 'el-icon-office-building' },
+        { path: '/employees', title: '人员管理', icon: 'el-icon-user-solid' },
         { path: '/books', title: '图书管理', icon: 'el-icon-reading' },
         { path: '/categories', title: '分类管理', icon: 'el-icon-folder-opened' },
         { path: '/borrow', title: '借阅管理', icon: 'el-icon-document' },

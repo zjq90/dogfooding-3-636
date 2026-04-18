@@ -109,3 +109,139 @@ INSERT INTO book_info (isbn, title, author, publisher, publish_date, category_id
 ('978-7-111-6', '明朝那些事儿', '当年明月', '中国友谊出版公司', '2018-11-01', 4, '历史通俗读物', 168.00, 7, 5, 'D区-04-01', 1),
 ('978-7-111-7', '艺术的故事', '贡布里希', '广西美术出版社', '2017-05-15', 5, '艺术史经典著作', 280.00, 3, 2, 'E区-05-01', 1),
 ('978-7-111-8', '深度学习', 'Ian Goodfellow', '人民邮电出版社', '2021-09-20', 3, '人工智能领域经典教材', 128.00, 4, 2, 'C区-03-03', 1);
+
+-- 部门表
+CREATE TABLE IF NOT EXISTS sys_department (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '部门ID',
+    name VARCHAR(100) NOT NULL COMMENT '部门名称',
+    code VARCHAR(30) NOT NULL UNIQUE COMMENT '部门编号(格式：B-数字)',
+    parent_id BIGINT DEFAULT 0 COMMENT '上级部门ID，0为顶级部门',
+    leader VARCHAR(50) COMMENT '部门负责人',
+    phone VARCHAR(20) COMMENT '联系电话',
+    email VARCHAR(100) COMMENT '邮箱',
+    address VARCHAR(255) COMMENT '部门地址',
+    sort_order INT DEFAULT 0 COMMENT '排序',
+    status TINYINT DEFAULT 1 COMMENT '状态：0-禁用，1-启用',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除',
+    INDEX idx_parent_id (parent_id),
+    INDEX idx_code (code),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='部门表';
+
+-- 内部人员表
+CREATE TABLE IF NOT EXISTS sys_employee (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '人员ID',
+    name VARCHAR(50) NOT NULL COMMENT '姓名',
+    employee_no VARCHAR(30) NOT NULL UNIQUE COMMENT '员工编号',
+    department_id BIGINT NOT NULL COMMENT '所属部门ID',
+    phone VARCHAR(20) COMMENT '手机号',
+    email VARCHAR(100) COMMENT '邮箱',
+    position VARCHAR(50) COMMENT '职位',
+    gender TINYINT DEFAULT 1 COMMENT '性别：0-女，1-男',
+    birthday DATE COMMENT '出生日期',
+    avatar VARCHAR(255) COMMENT '头像URL',
+    status TINYINT DEFAULT 1 COMMENT '状态：0-离职，1-在职',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除',
+    INDEX idx_department_id (department_id),
+    INDEX idx_employee_no (employee_no),
+    INDEX idx_status (status),
+    FOREIGN KEY (department_id) REFERENCES sys_department(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='内部人员表';
+
+-- 菜单权限表
+CREATE TABLE IF NOT EXISTS sys_menu (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '菜单ID',
+    name VARCHAR(50) NOT NULL COMMENT '菜单名称',
+    code VARCHAR(50) NOT NULL UNIQUE COMMENT '菜单编码',
+    parent_id BIGINT DEFAULT 0 COMMENT '父菜单ID',
+    path VARCHAR(100) COMMENT '路由路径',
+    icon VARCHAR(50) COMMENT '菜单图标',
+    type TINYINT DEFAULT 1 COMMENT '类型：1-菜单，2-按钮',
+    sort_order INT DEFAULT 0 COMMENT '排序',
+    status TINYINT DEFAULT 1 COMMENT '状态：0-禁用，1-启用',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除',
+    INDEX idx_parent_id (parent_id),
+    INDEX idx_code (code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='菜单权限表';
+
+-- 人员权限关联表
+CREATE TABLE IF NOT EXISTS sys_employee_permission (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    employee_id BIGINT NOT NULL COMMENT '人员ID',
+    menu_id BIGINT NOT NULL COMMENT '菜单ID',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    UNIQUE KEY uk_employee_menu (employee_id, menu_id),
+    INDEX idx_employee_id (employee_id),
+    INDEX idx_menu_id (menu_id),
+    FOREIGN KEY (employee_id) REFERENCES sys_employee(id),
+    FOREIGN KEY (menu_id) REFERENCES sys_menu(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='人员权限关联表';
+
+-- 插入部门测试数据
+INSERT INTO sys_department (name, code, parent_id, leader, phone, email, address, sort_order, status) VALUES
+('总公司', 'B-001', 0, '张总', '13800138000', 'ceo@company.com', '北京市朝阳区总部大厦', 1, 1),
+('技术部', 'B-002', 1, '李经理', '13800138001', 'tech@company.com', '总部大厦5层', 2, 1),
+('人事部', 'B-003', 1, '王经理', '13800138002', 'hr@company.com', '总部大厦3层', 3, 1),
+('财务部', 'B-004', 1, '赵经理', '13800138003', 'finance@company.com', '总部大厦4层', 4, 1),
+('运营部', 'B-005', 1, '刘经理', '13800138004', 'operation@company.com', '总部大厦2层', 5, 1),
+('前端组', 'B-006', 2, '陈组长', '13800138005', 'frontend@company.com', '5层A区', 1, 1),
+('后端组', 'B-007', 2, '林组长', '13800138006', 'backend@company.com', '5层B区', 2, 1),
+('测试组', 'B-008', 2, '周组长', '13800138007', 'test@company.com', '5层C区', 3, 1);
+
+-- 插入内部人员测试数据
+INSERT INTO sys_employee (name, employee_no, department_id, phone, email, position, gender, status) VALUES
+('张三', 'EMP001', 1, '13900139001', 'zhangsan@company.com', 'CEO', 1, 1),
+('李四', 'EMP002', 2, '13900139002', 'lisi@company.com', '技术总监', 1, 1),
+('王五', 'EMP003', 3, '13900139003', 'wangwu@company.com', '人事主管', 0, 1),
+('赵六', 'EMP004', 4, '13900139004', 'zhaoliu@company.com', '财务主管', 1, 1),
+('刘七', 'EMP005', 5, '13900139005', 'liuqi@company.com', '运营主管', 0, 1),
+('陈明', 'EMP006', 6, '13900139006', 'chenming@company.com', '前端工程师', 1, 1),
+('林华', 'EMP007', 7, '13900139007', 'linhua@company.com', '后端工程师', 1, 1),
+('周婷', 'EMP008', 8, '13900139008', 'zhouting@company.com', '测试工程师', 0, 1),
+('黄强', 'EMP009', 6, '13900139009', 'huangqiang@company.com', '前端工程师', 1, 1),
+('吴芳', 'EMP010', 7, '13900139010', 'wufang@company.com', '后端工程师', 0, 1);
+
+-- 插入菜单权限数据(基于系统实际功能)
+INSERT INTO sys_menu (name, code, parent_id, path, icon, type, sort_order, status) VALUES
+('数据概览', 'dashboard', 0, '/dashboard', 'el-icon-s-data', 1, 1, 1),
+('部门管理', 'department', 0, '/departments', 'el-icon-office-building', 1, 2, 1),
+('人员管理', 'employee', 0, '/employees', 'el-icon-user-solid', 1, 3, 1),
+('图书管理', 'book', 0, '/books', 'el-icon-reading', 1, 4, 1),
+('分类管理', 'category', 0, '/categories', 'el-icon-folder-opened', 1, 5, 1),
+('借阅管理', 'borrow', 0, '/borrow', 'el-icon-document', 1, 6, 1),
+('用户管理', 'user', 0, '/users', 'el-icon-user', 1, 7, 1),
+('新增部门', 'department:add', 2, '', '', 2, 1, 1),
+('编辑部门', 'department:edit', 2, '', '', 2, 2, 1),
+('删除部门', 'department:delete', 2, '', '', 2, 3, 1),
+('新增人员', 'employee:add', 3, '', '', 2, 1, 1),
+('编辑人员', 'employee:edit', 3, '', '', 2, 2, 1),
+('删除人员', 'employee:delete', 3, '', '', 2, 3, 1),
+('设置权限', 'employee:permission', 3, '', '', 2, 4, 1),
+('新增图书', 'book:add', 4, '', '', 2, 1, 1),
+('编辑图书', 'book:edit', 4, '', '', 2, 2, 1),
+('删除图书', 'book:delete', 4, '', '', 2, 3, 1),
+('新增分类', 'category:add', 5, '', '', 2, 1, 1),
+('编辑分类', 'category:edit', 5, '', '', 2, 2, 1),
+('删除分类', 'category:delete', 5, '', '', 2, 3, 1),
+('新增借阅', 'borrow:add', 6, '', '', 2, 1, 1),
+('编辑借阅', 'borrow:edit', 6, '', '', 2, 2, 1),
+('删除借阅', 'borrow:delete', 6, '', '', 2, 3, 1),
+('新增用户', 'user:add', 7, '', '', 2, 1, 1),
+('编辑用户', 'user:edit', 7, '', '', 2, 2, 1),
+('删除用户', 'user:delete', 7, '', '', 2, 3, 1);
+
+-- 插入人员权限关联数据（给张三、李四分配权限）
+INSERT INTO sys_employee_permission (employee_id, menu_id) VALUES
+(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7),
+(1, 8), (1, 9), (1, 10), (1, 11), (1, 12), (1, 13), (1, 14),
+(1, 15), (1, 16), (1, 17), (1, 18), (1, 19), (1, 20), (1, 21),
+(1, 22), (1, 23), (1, 24), (1, 25), (1, 26),
+(2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6),
+(2, 8), (2, 9), (2, 10), (2, 11), (2, 12), (2, 13), (2, 14),
+(2, 15), (2, 16), (2, 17), (2, 18), (2, 19), (2, 20);

@@ -46,6 +46,18 @@ const routes = [
         name: 'Users',
         component: () => import('@/views/user/index.vue'),
         meta: { title: '用户管理', icon: 'el-icon-user' }
+      },
+      {
+        path: 'departments',
+        name: 'Departments',
+        component: () => import('@/views/department/index.vue'),
+        meta: { title: '部门管理', icon: 'el-icon-office-building' }
+      },
+      {
+        path: 'employees',
+        name: 'Employees',
+        component: () => import('@/views/employee/index.vue'),
+        meta: { title: '人员管理', icon: 'el-icon-user-solid' }
       }
     ]
   },
