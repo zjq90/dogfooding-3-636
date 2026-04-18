@@ -51,4 +51,68 @@
         ORDER BY br.create_time DESC
     </select>
 
+    <select id="selectBorrowDetail" resultMap="BorrowResultMap">
+        SELECT 
+            br.id,
+            br.user_id,
+            u.username,
+            u.real_name,
+            br.book_id,
+            b.title AS book_title,
+            b.isbn AS book_isbn,
+            br.borrow_date,
+            br.due_date,
+            br.return_date,
+            br.status,
+            br.remark,
+            br.create_time,
+            br.update_time
+        FROM borrow_record br
+        LEFT JOIN sys_user u ON br.user_id = u.id
+        LEFT JOIN book_info b ON br.book_id = b.id
+        WHERE br.id = #{id} AND br.deleted = 0
+    </select>
+
+    <select id="selectBorrowingCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM borrow_record WHERE user_id = #{userId} AND status = 0 AND deleted = 0
+    </select>
+
+    <select id="selectOverdueCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM borrow_record WHERE status = 0 AND due_date &lt; #{today} AND deleted = 0
+    </select>
+
+    <select id="selectUserOverdueCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM borrow_record WHERE user_id = #{userId} AND status = 0 AND due_date &lt; #{today} AND deleted = 0
+    </select>
+
+    <select id="selectMonthlyBorrowStats" resultType="java.util.Map">
+        SELECT 
+            CONCAT(
+                CAST(YEAR(borrow_date) AS VARCHAR), 
+                '-', 
+                CASE WHEN MONTH(borrow_date) &lt; 10 THEN '0' ELSE '' END, 
+                CAST(MONTH(borrow_date) AS VARCHAR)
+            ) as month_name, 
+            COUNT(*) as count 
+        FROM borrow_record 
+        WHERE deleted = 0 
+        AND borrow_date &gt;= #{startDate}
+        GROUP BY YEAR(borrow_date), MONTH(borrow_date)
+        ORDER BY month_name
+    </select>
+
+    <select id="selectHotBooks" resultType="java.util.Map">
+        SELECT b.title as book_title, COUNT(*) as borrow_count 
+        FROM borrow_record br 
+        LEFT JOIN book_info b ON br.book_id = b.id 
+        WHERE br.deleted = 0 
+        GROUP BY br.book_id, b.title 
+        ORDER BY borrow_count DESC 
+        LIMIT 10
+    </select>
+
+    <select id="selectTotalBorrowCount" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM borrow_record WHERE deleted = 0
+    </select>
+
 </mapper>

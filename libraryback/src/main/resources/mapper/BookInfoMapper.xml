@@ -55,4 +55,54 @@
         ORDER BY b.create_time DESC
     </select>
 
+    <select id="selectBookDetail" resultMap="BookResultMap">
+        SELECT 
+            b.id,
+            b.isbn,
+            b.title,
+            b.author,
+            b.publisher,
+            b.publish_date,
+            b.category_id,
+            c.name AS category_name,
+            b.description,
+            b.cover_image,
+            b.price,
+            b.total_quantity,
+            b.available_quantity,
+            b.location,
+            b.status,
+            b.create_time,
+            b.update_time
+        FROM book_info b
+        LEFT JOIN book_category c ON b.category_id = c.id
+        WHERE b.id = #{id} AND b.deleted = 0
+    </select>
+
+    <update id="updateAvailableQuantity">
+        UPDATE book_info 
+        SET available_quantity = available_quantity + #{delta}, 
+            update_time = #{now}
+        WHERE id = #{id} 
+        AND available_quantity + #{delta} &gt;= 0 
+        AND deleted = 0
+    </update>
+
+    <select id="selectBookCount" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM book_info WHERE deleted = 0
+    </select>
+
+    <select id="selectTotalBookQuantity" resultType="java.lang.Long">
+        SELECT COALESCE(SUM(total_quantity), 0) FROM book_info WHERE deleted = 0
+    </select>
+
+    <select id="selectCategoryStats" resultType="java.util.Map">
+        SELECT b.category_id, c.name as category_name, COUNT(*) as count 
+        FROM book_info b 
+        LEFT JOIN book_category c ON b.category_id = c.id 
+        WHERE b.deleted = 0 
+        GROUP BY b.category_id, c.name 
+        ORDER BY count DESC
+    </select>
+
 </mapper>

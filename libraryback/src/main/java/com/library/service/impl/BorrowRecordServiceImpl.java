@@ -152,7 +152,15 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
         String cacheKey = "stats:monthlyBorrow";
         List<Map<String, Object>> stats = (List<Map<String, Object>>) redisTemplate.opsForValue().get(cacheKey);
         if (stats == null) {
-            stats = baseMapper.selectMonthlyBorrowStats();
+            LocalDate startDate = LocalDate.now().minusMonths(12);
+            stats = baseMapper.selectMonthlyBorrowStats(startDate);
+            for (Map<String, Object> stat : stats) {
+                Object monthName = stat.get("month_name");
+                if (monthName != null) {
+                    stat.put("month", monthName);
+                    stat.remove("month_name");
+                }
+            }
             redisTemplate.opsForValue().set(cacheKey, stats, 10, TimeUnit.MINUTES);
         }
         return stats;

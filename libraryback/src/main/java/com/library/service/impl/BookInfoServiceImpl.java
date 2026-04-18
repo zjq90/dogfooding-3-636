@@ -13,6 +13,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -60,7 +61,7 @@ public class BookInfoServiceImpl extends ServiceImpl<BookInfoMapper, BookInfo> i
             throw new BusinessException("图书已借完");
         }
         
-        int result = baseMapper.updateAvailableQuantity(bookId, -1);
+        int result = baseMapper.updateAvailableQuantity(bookId, -1, LocalDateTime.now());
         if (result > 0) {
             // 清除缓存
             redisTemplate.delete("book:" + bookId);
@@ -78,7 +79,7 @@ public class BookInfoServiceImpl extends ServiceImpl<BookInfoMapper, BookInfo> i
             throw new BusinessException("图书不存在");
         }
         
-        int result = baseMapper.updateAvailableQuantity(bookId, 1);
+        int result = baseMapper.updateAvailableQuantity(bookId, 1, LocalDateTime.now());
         if (result > 0) {
             // 清除缓存
             redisTemplate.delete("book:" + bookId);
